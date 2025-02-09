@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 app.use(express.json());
 
-const data = [
+let data = [
   {
     id: 1,
     name: "Arto Hellas",
@@ -57,6 +57,30 @@ app.delete("/api/persons/:id", (request, response) => {
   } else {
     response.status(404).end();
   }
+});
+
+app.post("/api/persons", (request, response) => {
+  const body = request.body;
+  const randomId = Math.floor(Math.random() * 1000);
+
+  if (!body.name || !body.number) {
+    return response.status(400).json({
+      error: "Name or number missing",
+    });
+  } else if (data.find((person) => person.name === body.name)) {
+    return response.status(400).json({
+      error: "Name must be unique",
+    });
+  }
+
+  const person = {
+    id: randomId,
+    name: body.name,
+    number: body.number,
+  };
+
+  data = data.concat(person);
+  response.json(data);
 });
 
 const PORT = 3001;
