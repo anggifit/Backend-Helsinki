@@ -6,6 +6,7 @@ const app = express();
 
 app.use(express.json());
 app.use(cors());
+app.use(express.static("dist"));
 
 app.use(
   morgan(function (tokens, req, res) {
@@ -49,7 +50,7 @@ app.get("/api/persons", (request, response) => {
   response.json(data); // Send a response to the client, stablishing the content type as text/HTML
 });
 
-app.get("/info", (request, response) => {
+app.get("/api/info", (request, response) => {
   const date = new Date().toString();
   const entries = data.length;
   return response.send(
