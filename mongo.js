@@ -4,8 +4,14 @@ if (process.argv.length < 3) {
   console.log("give password as argument");
   process.exit(1);
 }
+// } else if (process.argv.length === 4) {
+//   console.log("give name and number as arguments");
+//   process.exit(1);
+// }
 
 const password = process.argv[2];
+const newName = process.argv[3];
+const newNumber = process.argv[4];
 
 const url = `mongodb+srv://abonaldy:${password}@cluster0.gfvkf.mongodb.net/phonebook?retryWrites=true&w=majority`;
 
@@ -13,27 +19,29 @@ mongoose.set("strictQuery", false);
 
 mongoose.connect(url);
 
-const noteSchema = new mongoose.Schema({
-  content: String,
-  important: Boolean,
+const personSchema = new mongoose.Schema({
+  name: String,
+  number: String,
 });
 
-const Note = mongoose.model("Note", noteSchema);
+const Person = mongoose.model("Person", personSchema);
 
-const note = new Note({
-  content:
-    "Finish writing the blog post about sustainable living. Deadline is Friday.",
-  important: true,
-});
-
-Note.find({ important: true }).then((result) => {
-  result.forEach((note) => {
-    console.log(note);
+if (process.argv.length === 3) {
+  Person.find({}).then((result) => {
+    console.log("phonebook:");
+    result.forEach((person) => {
+      console.log(`${person.name} ${person.number}`);
+      return mongoose.connection.close();
+    });
   });
-  mongoose.connection.close();
-});
+} else if (process.argv.length === 5) {
+  const person = new Person({
+    name: newName,
+    number: newNumber,
+  });
 
-// note.save().then((result) => {
-//   console.log("note saved!");
-//   mongoose.connection.close();
-// });
+  return person.save().then((result) => {
+    console.log(`added ${newName} number ${newNumber} to phonebook`);
+    return mongoose.connection.close();
+  });
+}
