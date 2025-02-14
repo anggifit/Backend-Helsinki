@@ -8,10 +8,6 @@ const app = express();
 const Person = require("./models/person");
 
 // Middleware
-app.use(express.json());
-app.use(cors());
-app.use(express.static("dist"));
-
 app.use(
   morgan(function (tokens, req, res) {
     return [
@@ -26,6 +22,9 @@ app.use(
     ].join(" ");
   })
 );
+app.use(cors());
+app.use(express.static("dist"));
+app.use(express.json());
 
 // Routes
 app.get("/api/persons", (request, response) => {
@@ -36,10 +35,12 @@ app.get("/api/persons", (request, response) => {
 
 app.get("/api/info", (request, response) => {
   const date = new Date().toString();
-  const entries = data.length;
-  return response.send(
-    `<h3>Phonebook has info for ${entries} people</h3><br/><p>${date}</p>`
-  ); // Send a response to the client, stablishing the content type as text/HTML
+  Person.find({}).then((persons) => {
+    const entries = persons.length;
+    response.send(
+      `<h3>Phonebook has info for ${entries} people</h3><br/><p>${date}</p>`
+    ); // Send a response to the client, stablishing the content type as text/HTML
+  });
 });
 
 app.get("/api/persons/:id", (request, response) => {
@@ -48,16 +49,12 @@ app.get("/api/persons/:id", (request, response) => {
   });
 });
 
-app.delete("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  const person = data.find((person) => person.id === id);
-
-  if (person) {
-    const newData = data.filter((person) => person.id !== id);
-    response.json(newData);
-  } else {
-    response.status(404).end();
-  }
+app.delete("/api/persons/:id", (request, response, next) => {
+  Person.findByIdAndDelete(request.params.id)
+    .then((result) => {
+      response.status(204).end();
+    })
+    .catch((error) => next(error));
 });
 
 app.post("/api/persons", (request, response) => {
@@ -67,27 +64,43 @@ app.post("/api/persons", (request, response) => {
     return response.status(400).json({
       error: "Name or number missing",
     });
-  } else if (
-    Person.find({}).then((persons) =>
-      persons.find((person) => person.name === body.name)
-    )
-  ) {
-    return response.status(400).json({
-      error: "Name must be unique",
-    });
   }
 
-  const person = new Person({
-    name: body.name,
-    number: body.number,
-  });
+  Person.find({}) // Busca en la base de datos, es una promesa
+    .then((persons) => {
+      if (persons.find((person) => person.name === body.name)) {
+        return response.status(400).json({
+          error: "Name must be unique",
+        });
+      }
+      const person = new Person({
+        name: body.name,
+        number: body.number,
+      });
 
-  person.save().then((savedPerson) => {
-    response.status(201).json(savedPerson);
-  });
+      person.save().then((savedPerson) => {
+        response.status(201).json(savedPerson);
+      });
+    });
 });
 
+// Middleware para manejar rutas no encontradas
+
+// Middleware para manejar errores
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message);
+
+  if (error.name === "CastError") {
+    return response.status(400).send({ error: "malformatted id" });
+  }
+  next(error);
+};
+
+app.use(errorHandler);
+
+// Server
 const PORT = process.env.PORT;
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
