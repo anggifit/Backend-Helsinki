@@ -59,30 +59,20 @@ app.delete("/api/persons/:id", (request, response, next) => {
     .catch((error) => next(error));
 });
 
-app.post("/api/persons", (request, response) => {
-  const body = request.body;
+app.post("/api/persons", (request, response, next) => {
+  const { name, number } = request.body;
+  const person = new Person({
+    name: name,
+    number: number,
+  });
 
-  if (!body.name || !body.number) {
-    return response.status(400).json({
-      error: "Name or number missing",
-    });
-  }
-
-  Person.find({}) // Busca en la base de datos, es una promesa
-    .then((persons) => {
-      if (persons.find((person) => person.name === body.name)) {
-        return response.status(400).json({
-          error: "Name must be unique",
-        });
-      }
-      const person = new Person({
-        name: body.name,
-        number: body.number,
-      });
-
-      person.save().then((savedPerson) => {
-        response.status(201).json(savedPerson);
-      });
+  person
+    .save()
+    .then((savedPerson) => {
+      response.status(201).json(savedPerson);
+    })
+    .catch((error) => {
+      next(error);
     });
 });
 
@@ -109,6 +99,10 @@ const errorHandler = (error, request, response, next) => {
 
   if (error.name === "CastError") {
     return response.status(400).send({ error: "malformatted id" });
+  } else if (error.name === "ValidationError") {
+    // Extracción de mensajes de error personalizados
+    const errors = Object.values(error.errors).map((err) => err.message);
+    return response.status(400).json({ error: errors.join(", ") });
   }
   next(error);
 };
