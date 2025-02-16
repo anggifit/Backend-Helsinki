@@ -61,16 +61,17 @@ El proyecto está estructurado de la siguiente manera:
    
   El servidor estará disponible en http://localhost:3001.
 
-## Rutas de la API
+# Rutas de la API
 
-  Puedes interactuar con la API utilizando herramientas como Postman o los archivos .rest incluidos en la carpeta /requests. Aquí tienes algunos ejemplos de rutas:
+Puedes interactuar con la API utilizando herramientas como Postman o los archivos `.rest` incluidos en la carpeta `/requests`. Aquí tienes algunos ejemplos de rutas:
 
-  GET /api/persons: Obtener todas las personas agendadas.
-  GET /api/info: Obtener información acerca de la agenda (cuantas personas estan agredadas y fecha de la solicitud).
-  GET /api/persons/:id : Obtener una persona específica por ID.
-  DELETE /api/persons/:id : Eliminar una persona.
-  POST /api/persons: Crear una nueva persona.
-  PUT /api/persons/:id : Actualizar una persona existente.
+- **GET** `/api/persons`: Obtener todas las personas agendadas.
+- **GET** `/api/info`: Obtener información acerca de la agenda (cuántas personas están agendadas y la fecha de la solicitud).
+- **GET** `/api/persons/:id`: Obtener una persona específica por ID.
+- **DELETE** `/api/persons/:id`: Eliminar una persona.
+- **POST** `/api/persons`: Crear una nueva persona.
+- **PUT** `/api/persons/:id`: Actualizar una persona existente.
+
   
 ## Probar la API con Archivos .rest
   En la carpeta /requests encontrarás archivos .rest que contienen ejemplos de solicitudes HTTP. Puedes ejecutarlas directamente en Visual Studio Code usando la extensión REST Client.
